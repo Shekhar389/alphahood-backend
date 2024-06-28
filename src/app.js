@@ -37,15 +37,15 @@ app.post("/contact", (req, res) => {
         if (error) {
             console.log(error);
             return res.json({
-                success: true,
-                statusCode: 200,
+                success: false,
+                statusCode: 400,
                 "message": info.response
             })
         } else {
             console.log('Email sent: ' + info.response);
             return res.json({
-                success: false,
-                statusCode: 400,
+                success: true,
+                statusCode: 200,
                 "message": info.response
             })
         }
