@@ -1,58 +1,31 @@
-import express from "express";
-import nodemailer from "nodemailer";
+import express from "express"
+import cors from "cors"
+import cookieParser from "cookie-parser"
 
-const PORT = process.env.PORT || 8080;
+//routes import
+import { contactRouter } from "./routes/contact.route.js"
 
-const app = express();
+import { errorMiddleware } from "./middlewares/error.middleware.js"
 
-app.use(express.json());
+const app = express()
+
+app.use(cors({
+    origin: process.env.CORS_ORIGIN,
+    credentials: true
+}))
+
+app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+app.use(cookieParser())
 
-app.get("/", (req, res) => {
-    return res.json({
-        status: true
-    })
+app.get("/", (_req, res) => {
+    return res.status(200).json({ status: "running"});
 });
 
-app.post("/contact", (req, res) => {
+//routes declaration
+app.use("/", contactRouter);
 
-    const { name, email, phone, details } = req.body;
+// Error handling middleware
+app.use(errorMiddleware);
 
-    const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: process.env.NODEMAILER_EMAIL,
-            pass: process.env.NODEMAILER_PASSWORD,
-        }
-    });
-
-    let mailOptions = {
-        from: process.env.NODEMAILER_EMAIL,
-        to: email,
-        subject: `Contact Us - ${name} - ${phone}`,
-        text: details,
-    };
-
-    transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-            console.log(error);
-            return res.json({
-                success: false,
-                statusCode: 400,
-                "message": info.response
-            })
-        } else {
-            console.log('Email sent: ' + info.response);
-            return res.json({
-                success: true,
-                statusCode: 200,
-                "message": info.response
-            })
-        }
-    });
-
-})
-
-app.listen(PORT, () => {
-    console.log(`Server Started ...`);
-});
+export { app }
